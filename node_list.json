@@ -1,5 +1,3 @@
 {
-    "PromptStashPassthrough": "Simple node to accept new text or use existing text",
-    "PromptStashSaver": "Save and manage prompts in organized lists and capture text nodes",
-    "PromptStashManager": "Manage prompt stash lists and categories"
+    "PromptStash": "A prompt box with saved prompts in named lists"
 }

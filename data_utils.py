@@ -1,3 +1,4 @@
+# Modified in the Yuncun/ComfyUI-Prompt-Stash fork (2026-10-02): trimmed to the data-file setup.
 import os
 import json
 import shutil
@@ -40,95 +41,6 @@ def migrate_data_file_if_needed(old_base_dir, new_data_file):
 
     return False
 
-def deep_merge_lists(existing_lists, import_lists):
-    """
-    Deep merge imported lists into existing lists with conflict resolution.
-    If a key already exists, append (2), (3), etc. to make it unique.
-    Returns the merged lists and a summary of what was merged.
-    """
-    merged = existing_lists.copy()
-    summary = {
-        "lists_added": [],
-        "lists_merged": [],
-        "prompts_added": 0,
-        "prompts_renamed": []
-    }
-    
-    for list_name, import_prompts in import_lists.items():
-        if list_name not in merged:
-            # New list - add it directly
-            merged[list_name] = import_prompts.copy()
-            summary["lists_added"].append(list_name)
-            summary["prompts_added"] += len(import_prompts)
-        else:
-            # List exists - merge prompts with conflict resolution
-            existing_prompts = merged[list_name]
-            summary["lists_merged"].append(list_name)
-            
-            for prompt_key, prompt_value in import_prompts.items():
-                if prompt_key not in existing_prompts:
-                    # No conflict - add directly
-                    existing_prompts[prompt_key] = prompt_value
-                    summary["prompts_added"] += 1
-                else:
-                    # Conflict - find unique name
-                    base_key = prompt_key
-                    counter = 2
-                    new_key = f"{base_key} ({counter})"
-                    
-                    while new_key in existing_prompts:
-                        counter += 1
-                        new_key = f"{base_key} ({counter})"
-                    
-                    existing_prompts[new_key] = prompt_value
-                    summary["prompts_added"] += 1
-                    summary["prompts_renamed"].append({
-                        "original": prompt_key,
-                        "renamed": new_key,
-                        "list": list_name
-                    })
-    
-    return merged, summary
-
-def validate_import_data(data):
-    """
-    Validate imported JSON data structure.
-    Returns (is_valid, error_message, cleaned_data).
-    """
-    if not isinstance(data, dict):
-        return False, "Import data must be a JSON object", None
-    
-    # Check for required 'lists' key
-    if "lists" not in data:
-        return False, "Import data must contain a 'lists' object", None
-    
-    lists = data["lists"]
-    if not isinstance(lists, dict):
-        return False, "The 'lists' field must be an object", None
-    
-    # Validate each list
-    cleaned_lists = {}
-    for list_name, prompts in lists.items():
-        if not isinstance(list_name, str) or not list_name.strip():
-            continue  # Skip invalid list names
-        
-        if not isinstance(prompts, dict):
-            continue  # Skip invalid prompt collections
-        
-        # Clean prompt data
-        cleaned_prompts = {}
-        for prompt_key, prompt_value in prompts.items():
-            if isinstance(prompt_key, str) and prompt_key.strip() and isinstance(prompt_value, str):
-                cleaned_prompts[prompt_key.strip()] = prompt_value
-        
-        if cleaned_prompts:  # Only add lists that have valid prompts
-            cleaned_lists[list_name.strip()] = cleaned_prompts
-    
-    if not cleaned_lists:
-        return False, "No valid prompt lists found in import data", None
-    
-    return True, None, cleaned_lists
-
 def init_data_file(node_base_dir):
     """Initialize data file, preferring user directory with migration support."""
 
@@ -154,9 +66,7 @@ def init_data_file(node_base_dir):
         default_data = {
             "version": file_version,
             "lists": {
-                "default": {
-                    "Instructions": "📝 Quick Tips:\n\n• 'Use Input' takes text from input node\n• 'Use Prompt' uses text from prompt box (input node won't run)\n\n• Prompt saves only if 'Save Name' is filled\n• Saving to an existing name overwrites it\n\n• Use 'List' dropdown to select prompt lists\n• Manage lists with the Prompt Stash Manager node\n\n• Saved prompts persist between sessions\n• All nodes share the same prompt library",
-                }
+                "default": {}
             }
         }
 
@@ -207,46 +117,3 @@ def init_data_file(node_base_dir):
 
     return data_file
 
-
-def update_node_in_workflow(workflow, unique_id, callback):
-    """
-    Traverses the workflow (including subgraphs) to find the node with unique_id.
-    If found, executes callback(node).
-    """
-    if not workflow:
-        return
-
-    # 1. Parse the unique_id path
-    path = str(unique_id).split(':')
-    
-    # Start at root
-    current_node_list = workflow.get("nodes", [])
-    
-    # 2. Traverse
-    for index, path_id in enumerate(path):
-        node_candidate = next(
-            (x for x in current_node_list if str(x["id"]) == str(path_id)), 
-            None
-        )
-        
-        if not node_candidate:
-            return # Path broken
-        
-        # 3. Check if leaf
-        if index == len(path) - 1:
-            # Found it! Execute the callback logic on this node
-            callback(node_candidate)
-            return
-        
-        # 4. Dive deeper
-        subgraph_uuid = node_candidate.get("type")
-        subgraphs = workflow.get("definitions", {}).get("subgraphs", [])
-        subgraph_def = next(
-            (sg for sg in subgraphs if str(sg["id"]) == str(subgraph_uuid)), 
-            None
-        )
-        
-        if subgraph_def:
-            current_node_list = subgraph_def.get("nodes", [])
-        else:
-            return

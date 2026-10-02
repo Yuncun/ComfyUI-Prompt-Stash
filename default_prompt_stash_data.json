@@ -1,18 +1,6 @@
 {
+  "version": "1.0",
   "lists": {
-    "default": {
-      "Instructions": "📝 Quick Tips:\n\n• 'Use Input' takes text from input node\n• 'Use Prompt' uses text from prompt box (input node won't run)\n\n• Prompt saves only if 'Save Name' is filled\n• Saving to an existing name overwrites it\n\n• Use 'List' dropdown to select prompt lists\n• Manage lists with the Prompt Stash Manager node\n\n• For real-time editing, use Prompt Stash Passthrough node with 'Pause to Edit'\n• If workflow closes while paused, use 'Clear Paused' in Manager node\n\n• Saved prompts persist between sessions\n• All nodes share the same prompt library",
-      "ManageLists": "📂 Managing Prompt Lists:\n\n• Use the Prompt Stash Manager node to add or delete prompt lists\n• 'Add' creates a new list named in 'New List Name'\n• 'Delete' removes the selected list from 'Existing Lists'\n• Cannot delete the last remaining list\n• 'Clear Paused' resets any stuck pause states\n\n• Organize prompts into categories using lists\n• Switch between lists in the Prompt Stash Saver node using the 'List' dropdown",
-      "positive_demo": "masterpiece, best quality, highly detailed",
-      "negative_demo": "worst quality, bad anatomy, text, error, jpeg artifacts, blurry"
-    },
-    "characters": {
-      "wizard": "elderly wizard with long white beard, wearing blue robes with stars",
-      "warrior": "strong warrior wearing plate armor, battle-scarred, determined expression"
-    },
-    "backgrounds": {
-      "forest": "dense forest, tall trees, dappled sunlight, misty atmosphere",
-      "sea": "vast ocean depths"
-    }
+    "default": {}
   }
 }
